@@ -6,7 +6,7 @@ import psycopg
 
 logger = logging.getLogger(__name__)
 
-FIX_HINT = "re-run migrations on a fresh database and re-ingest"
+FIX_HINT = "run `make db-reset` (wipes the database and re-migrates), then re-ingest"
 
 
 class SchemaMismatchError(RuntimeError):

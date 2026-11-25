@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     retrieval_mode: Literal["vector", "keyword", "hybrid"] = "hybrid"
     top_k: int = Field(default=6, gt=0)
     on_topic_threshold: float = 0.5
+
+    @field_validator("anthropic_api_key", mode="before")
+    @classmethod
+    def _blank_key_is_none(cls, value: object) -> object:
+        # `.env.example` ships `ANTHROPIC_API_KEY=` blank; treat that as "no key".
+        return None if value == "" else value
 
 
 @lru_cache

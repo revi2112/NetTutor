@@ -61,3 +61,8 @@ def test_embed_dim_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("EMBED_DIM", "0")
     with pytest.raises(ValidationError):
         make()
+
+
+def test_blank_api_key_is_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "")
+    assert make().anthropic_api_key is None

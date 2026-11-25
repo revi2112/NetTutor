@@ -38,12 +38,6 @@ def test_database_url() -> str:
 
 
 @pytest.fixture
-def client(test_database_url: str) -> Iterator[TestClient]:
-    with TestClient(create_app(make_settings(database_url=test_database_url))) as c:
-        yield c
-
-
-@pytest.fixture
 def db_conn(test_database_url: str) -> Iterator[psycopg.Connection]:
     """A connection to the test database with an empty `public` schema."""
     with psycopg.connect(test_database_url, connect_timeout=3) as conn:
@@ -60,3 +54,10 @@ def migrated_conn(db_conn: psycopg.Connection) -> psycopg.Connection:
 
     apply_migrations(db_conn, embed_dim=make_settings().embed_dim)
     return db_conn
+
+
+@pytest.fixture
+def client(migrated_conn: psycopg.Connection, test_database_url: str) -> Iterator[TestClient]:
+    """App wired to the test database, starting from a fresh migrated schema."""
+    with TestClient(create_app(make_settings(database_url=test_database_url))) as c:
+        yield c

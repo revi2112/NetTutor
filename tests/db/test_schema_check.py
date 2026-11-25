@@ -25,6 +25,7 @@ def test_column_dim_mismatch(migrated_conn: psycopg.Connection) -> None:
         check_schema(migrated_conn, MODEL, 768)
     assert "384" in str(err.value)
     assert "768" in str(err.value)
+    assert "make db-reset" in str(err.value)
 
 
 @pytest.mark.db

@@ -1,4 +1,4 @@
-.PHONY: install dev test lint typecheck check db-up db-down migrate ingest eval
+.PHONY: install dev test lint typecheck check db-up db-down db-reset migrate ingest eval
 
 install:
 	uv sync
@@ -23,6 +23,11 @@ db-up:
 
 db-down:
 	docker compose down
+
+db-reset:
+	docker compose down -v
+	docker compose up -d --wait
+	uv run python -m app.db.migrate
 
 migrate:
 	uv run python -m app.db.migrate
