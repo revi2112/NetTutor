@@ -41,3 +41,22 @@ def test_database_url() -> str:
 def client(test_database_url: str) -> Iterator[TestClient]:
     with TestClient(create_app(make_settings(database_url=test_database_url))) as c:
         yield c
+
+
+@pytest.fixture
+def db_conn(test_database_url: str) -> Iterator[psycopg.Connection]:
+    """A connection to the test database with an empty `public` schema."""
+    with psycopg.connect(test_database_url, connect_timeout=3) as conn:
+        conn.execute("DROP SCHEMA public CASCADE")
+        conn.execute("CREATE SCHEMA public")
+        conn.commit()
+        yield conn
+
+
+@pytest.fixture
+def migrated_conn(db_conn: psycopg.Connection) -> psycopg.Connection:
+    """db_conn with all migrations applied at the default embedding dimension."""
+    from app.db.migrate import apply_migrations
+
+    apply_migrations(db_conn, embed_dim=make_settings().embed_dim)
+    return db_conn
