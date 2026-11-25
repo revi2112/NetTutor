@@ -20,7 +20,7 @@ Plans per session: `docs/superpowers/plans/`.
 
 ## Local runtime
 - `docker-compose.yml` runs only Postgres (`pgvector/pgvector:pg16`). The app runs natively.
-- `make db-up`, `make migrate`, `make dev`. Tests use a separate `nettutor_test` database.
+- `make db-up`, `make migrate`, `make dev`. Postgres is published on host port 5433 (5432 is often taken by a local install). Tests use a separate `nettutor_test` database.
 
 ## Conventions
 - Typed code, small modules, every feature has tests (write the failing test first).

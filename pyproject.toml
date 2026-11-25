@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest", "httpx", "ruff", "mypy"]
+dev = ["pytest", "httpx2", "ruff", "mypy"]
 
 [tool.uv]
 package = false
