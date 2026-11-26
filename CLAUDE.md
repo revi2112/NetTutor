@@ -20,6 +20,9 @@ Plans per session: `docs/superpowers/plans/`.
 
 ## Local runtime
 - `docker-compose.yml` runs only Postgres (`pgvector/pgvector:pg16`). The app runs natively.
+- `make fetch` downloads the RFCs in `data/rfc_list.yaml` into `data/raw/` (git-ignored).
+  `uv run python -m scripts.parse_report [n ...]` shows how each parses; `suspect` > 0 means
+  a heading-like line was not accepted (RFC 1035 §6.4.1–6.4.3 is a known one).
 - `make db-up`, `make migrate`, `make dev`. Postgres is published on host port 5433 (5432 is often taken by a local install). Tests use a separate `nettutor_test` database.
 
 ## Conventions
