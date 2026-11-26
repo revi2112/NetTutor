@@ -19,6 +19,10 @@ class Settings(BaseSettings):
 
     embed_model: str = "BAAI/bge-small-en-v1.5"
     embed_dim: int = Field(default=384, gt=0)
+    embed_cache_dir: str = ".cache/fastembed"
+
+    chunk_max_tokens: int = Field(default=400, gt=0)
+    chunk_overlap_tokens: int = Field(default=60, ge=0)
 
     retrieval_mode: Literal["vector", "keyword", "hybrid"] = "hybrid"
     top_k: int = Field(default=6, gt=0)

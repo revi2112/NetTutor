@@ -11,6 +11,8 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     "pyyaml>=6.0.4",
+    "fastembed>=0.9.1",
+    "pgvector>=0.5.1",
 ]
 
 [dependency-groups]

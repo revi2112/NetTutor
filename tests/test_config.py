@@ -14,6 +14,9 @@ ENV_VARS = [
     "RETRIEVAL_MODE",
     "TOP_K",
     "ON_TOPIC_THRESHOLD",
+    "EMBED_CACHE_DIR",
+    "CHUNK_MAX_TOKENS",
+    "CHUNK_OVERLAP_TOKENS",
 ]
 
 
@@ -35,6 +38,9 @@ def test_defaults() -> None:
     assert s.embed_dim == 384
     assert s.retrieval_mode == "hybrid"
     assert s.top_k == 6
+    assert s.embed_cache_dir == ".cache/fastembed"
+    assert s.chunk_max_tokens == 400
+    assert s.chunk_overlap_tokens == 60
 
 
 def test_api_key_optional() -> None:
