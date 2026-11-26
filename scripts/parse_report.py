@@ -15,7 +15,9 @@ from app.ingest.parse import Section, parse_rfc, strip_pagination
 from app.ingest.rfc_list import load_rfc_list
 
 RAW_DIR = Path("data/raw")
-_HEADING_SHAPE = re.compile(r"^(\d+(?:\.\d+)+|\d+(?=\.)|[A-Z](?:\.\d+)+)\.?\s+\S")
+_HEADING_SHAPE = re.compile(
+    r"^(?:Appendix\s+)?(\d+(?:\.\d+)+|\d+(?=\.)|[A-Z]\.?\d+(?:\.\d+)*)\.?\s+\S"
+)
 
 
 def suspect_lines(raw: str, sections: list[Section]) -> list[str]:
@@ -27,6 +29,8 @@ def suspect_lines(raw: str, sections: list[Section]) -> list[str]:
         if match is None or "...." in line:
             continue
         section_id = match.group(1).removesuffix(".0")
+        if section_id[0].isalpha() and section_id[1] != ".":
+            section_id = f"{section_id[0]}.{section_id[1:]}"  # RFC 4303: "A2.1" -> "A.2.1"
         started = started or section_id == "1"
         if started and section_id not in accepted:
             found.append(line.rstrip())

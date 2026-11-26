@@ -57,16 +57,29 @@ def strip_pagination(raw: str) -> list[str]:
 # Leading whitespace is allowed: RFC 791 centers its top-level headings. A top-level number
 # needs its dot ("1.  Introduction") so a date line like "1 January 1980" isn't a heading.
 _NUMBERED = re.compile(r"^\s*(\d+(?:\.\d+)+|\d+(?=\.))\.?\s+(\S.*?)\s*$")
-_APPENDIX = re.compile(r"^\s*(?i:appendix)\s+([A-Z])[.:]?\s+(\S.*?)\s*$")
+# "Appendix A.  Title", and RFC 4271's "Appendix F.1.  Title".
+_APPENDIX = re.compile(r"^\s*(?i:appendix)\s+([A-Z](?:\.\d+)*)[.:]?\s+(\S.*?)\s*$")
 # RFC 2328/4120 write appendices as "A.  Title" with no "Appendix"; only at column 0.
 _APPENDIX_BARE = re.compile(r"^([A-Z])\.\s+(\S.*?)\s*$")
-_APPENDIX_SUB = re.compile(r"^\s*([A-Z](?:\.\d+)+)\.?\s+(\S.*?)\s*$")
+# "A.1.  Title", and RFC 4303's "A2.1.  Title" (no dot after the letter; stored as "A.2.1").
+_APPENDIX_SUB = re.compile(r"^\s*([A-Z])\.?(\d+(?:\.\d+)*)\.?\s+(\S.*?)\s*$")
 _DOT_LEADER = re.compile(r"\.{3,}")
 # Arrows and box edges appear in protocol diagrams, not section titles. (Bare "<", ">" and "="
 # do occur in real titles: RFC 5321 4.2.5 "<CRLF>.<CRLF>", RFC 1034 6.2.8 "QNAME=...".)
 _DIAGRAM_CHARS = re.compile(r"-->|<--|\|")
 # Figure and table rows line up in columns; titles never have wide gaps between words.
 _COLUMN_GAP = re.compile(r"\S {3,}\S")
+
+# Unnumbered headings that may follow the last numbered section (RFC 4271, 4120, 5246...).
+# Back matter (credits, index, contact details, boilerplate) is dropped: index pages are
+# keyword-dense noise for search. The others are kept as sections "u1", "u2", ...
+_BACK_MATTER = re.compile(
+    r"^(Acknowledge?ments|Contributors|Index|(Author|Editor)s?'?s? Address(es)?"
+    r"|Full Copyright Statement|Intellectual Property|Working Group Information)\s*$"
+)
+_TRAILING = re.compile(
+    r"^((Security|IANA) Considerations|(Normative |Informative )?References|END NOTES)\s*$"
+)
 
 SectionId = tuple[str, ...]
 
@@ -105,15 +118,15 @@ def _match_heading(line: str) -> tuple[SectionId, str] | None:
     """Parse a line that looks like a heading into (id, title), ignoring context."""
     # A single-letter id needs "Appendix X" or a column-0 "X.  Title"; otherwise a
     # sentence like "A user interface should allow" would read as Appendix A.
-    match = (
-        _APPENDIX.match(line)
-        or _APPENDIX_BARE.match(line)
-        or _APPENDIX_SUB.match(line)
-        or _NUMBERED.match(line)
-    )
-    if match is None:
-        return None
-    section_id, title = tuple(match.group(1).split(".")), match.group(2)
+    sub = _APPENDIX_SUB.match(line)
+    if sub is not None:
+        id_text, title = f"{sub.group(1)}.{sub.group(2)}", sub.group(3)
+    else:
+        match = _APPENDIX.match(line) or _APPENDIX_BARE.match(line) or _NUMBERED.match(line)
+        if match is None:
+            return None
+        id_text, title = match.group(1), match.group(2)
+    section_id = tuple(id_text.split("."))
     if not _plausible_title(title):
         return None
     if len(section_id) > 1 and section_id[-1] == "0":
@@ -192,13 +205,27 @@ def parse_numbered(lines: list[str]) -> list[Section]:
     if not headings:
         return []
 
+    # Unnumbered headings after the last numbered section; they also end that section.
+    trailing = [
+        i
+        for i in range(headings[-1][1], len(lines))
+        if (_BACK_MATTER.match(lines[i]) or _TRAILING.match(lines[i])) and _is_blank(lines, i + 1)
+    ]
+
     sections: list[Section] = []
     abstract = _abstract(lines[: headings[0][0]])
     if abstract is not None:
         sections.append(Section("0", "Abstract", abstract))
-    ends = [index for index, _, _, _ in headings[1:]] + [len(lines)]
+    ends = [index for index, _, _, _ in headings[1:]] + [(trailing or [len(lines)])[0]]
     for (_, body_start, section_id, title), end in zip(headings, ends, strict=True):
-        sections.append(Section(".".join(section_id), title, _normalize(lines[body_start:end])))
+        if not _BACK_MATTER.match(title):  # RFC 1918: "10. Authors' Addresses"
+            sections.append(Section(".".join(section_id), title, _normalize(lines[body_start:end])))
+    kept = [i for i in trailing if not _BACK_MATTER.match(lines[i])]
+    for number, start in enumerate(kept, start=1):
+        end = next((i for i in trailing if i > start), len(lines))
+        sections.append(
+            Section(f"u{number}", lines[start].strip(), _normalize(lines[start + 1 : end]))
+        )
     return sections
 
 
