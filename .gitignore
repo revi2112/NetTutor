@@ -7,3 +7,8 @@ __pycache__/
 data/raw/
 .DS_Store
 .superpowers/
+
+# Planning notes and Claude Code instructions stay local
+docs/
+CLAUDE.md
+nettutor-claude-code-tasks.md
