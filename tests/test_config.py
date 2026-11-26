@@ -17,6 +17,8 @@ ENV_VARS = [
     "EMBED_CACHE_DIR",
     "CHUNK_MAX_TOKENS",
     "CHUNK_OVERLAP_TOKENS",
+    "RRF_K",
+    "RETRIEVAL_CANDIDATES",
 ]
 
 
@@ -41,6 +43,8 @@ def test_defaults() -> None:
     assert s.embed_cache_dir == ".cache/fastembed"
     assert s.chunk_max_tokens == 400
     assert s.chunk_overlap_tokens == 60
+    assert s.rrf_k == 60
+    assert s.retrieval_candidates == 50
 
 
 def test_api_key_optional() -> None:
