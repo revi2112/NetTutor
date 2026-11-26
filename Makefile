@@ -36,7 +36,7 @@ fetch:
 	uv run python -m scripts.fetch_rfcs
 
 ingest:
-	@echo "not implemented yet (session 3)"; exit 1
+	uv run python -m scripts.ingest
 
 eval:
 	@echo "not implemented yet (session 4)"; exit 1
