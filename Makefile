@@ -1,4 +1,4 @@
-.PHONY: install dev test lint typecheck check db-up db-down db-reset migrate ingest eval
+.PHONY: install dev test lint typecheck check db-up db-down db-reset migrate fetch ingest eval
 
 install:
 	uv sync
@@ -31,6 +31,9 @@ db-reset:
 
 migrate:
 	uv run python -m app.db.migrate
+
+fetch:
+	uv run python -m scripts.fetch_rfcs
 
 ingest:
 	@echo "not implemented yet (session 3)"; exit 1
