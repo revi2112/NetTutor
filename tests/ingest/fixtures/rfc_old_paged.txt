@@ -1,0 +1,64 @@
+Network Working Group                                          A. Author
+Request for Comments: 9999                                   Example Org
+                                                              March 1999
+
+
+                        Example Transfer Protocol
+
+Abstract
+
+   This memo defines the Example Transfer Protocol.
+
+Status of this Memo
+
+   Distribution of this memo is unlimited.
+
+Table of Contents
+
+   1.  Introduction ................................................  1
+   2.  Operation ...................................................  2
+   Appendix A.  Examples ...........................................  3
+
+
+
+Author                       Informational                      [Page 1]
+
+RFC 9999                Example Transfer Protocol             March 1999
+
+
+1.  Introduction
+
+   The protocol moves examples between hosts.
+
+1.1.  Terminology
+
+   An example is a unit of data.
+
+2.  Operation
+
+   Hosts follow these steps:
+
+   1.  Open a connection.
+
+   2.  Send the example.
+
+   3.  Close the connection.
+
+   The steps repeat until done.
+
+
+
+Author                       Informational                      [Page 2]
+
+RFC 9999                Example Transfer Protocol             March 1999
+
+
+   The receiver acknowledges each example.
+
+Appendix A.  Examples
+
+   A sample exchange.
+
+A.1.  Simple Exchange
+
+   One host sends one example.
