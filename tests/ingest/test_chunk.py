@@ -74,3 +74,31 @@ def test_embed_text_and_hash() -> None:
     assert chunk.content_hash != other.content_hash
     assert len(chunk.content_hash) == 64
     int(chunk.content_hash, 16)
+
+
+def test_hash_covers_title() -> None:
+    # A parser fix that only changes a title must change the hash (the title is embedded).
+    old = Chunk(1, "2", "Old title", "body", 1)
+    fixed = Chunk(1, "2", "Fixed title", "body", 1)
+    assert old.content_hash != fixed.content_hash
+
+
+def test_no_overlap_only_chunks() -> None:
+    # Overlap is skipped when overlap + next unit would not fit; otherwise the next chunk
+    # would be nothing but the previous chunk's tail (RFC 1034 6.2.1 "...would be:").
+    text = (
+        "one two three\n\nSee below:\n\nfour five six seven\n\nSee below:\n\neight nine ten eleven"
+    )
+    chunks = chunk_text(text, count_tokens=words, max_tokens=5, overlap_tokens=2)
+    for earlier, later in zip(chunks, chunks[1:], strict=False):
+        assert not earlier.endswith(later)
+
+
+def test_duplicate_chunks_in_a_section_dropped() -> None:
+    # Identical chunk text twice in one section would violate chunks.content_hash UNIQUE.
+    text = "same words here\n\nother stuff\n\nsame words here"
+    chunks = chunk_document(
+        1, [Section("1", "T", text)], count_tokens=words, max_tokens=3, overlap_tokens=0
+    )
+    texts = [c.text for c in chunks]
+    assert texts == ["same words here", "other stuff"]

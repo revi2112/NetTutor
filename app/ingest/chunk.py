@@ -5,7 +5,8 @@ Three steps:
    and a line over the limit by its words. (A single word over the limit stays one unit.)
 2. Pack units greedily into a chunk while their token counts sum to at most `max_tokens`.
 3. Overlap: the next chunk starts by repeating the previous chunk's trailing units, as many
-   as fit in `overlap_tokens` (none if the last unit alone is bigger).
+   as fit in `overlap_tokens` and still leave room for the next new unit (none otherwise).
+   An exact duplicate of an earlier chunk in the same section is dropped.
 
 A chunk's text is an exact slice of the section text (first unit's start to last unit's
 end), so the RFC's own formatting, such as indentation in diagrams, is kept for citations.
@@ -37,8 +38,8 @@ class Chunk:
 
     @property
     def content_hash(self) -> str:
-        key = f"{self.rfc_number}|{self.section_id}|{self.text}"
-        return hashlib.sha256(key.encode()).hexdigest()
+        """Hash of exactly what gets embedded, so any change to it (title too) re-embeds."""
+        return hashlib.sha256(self.embed_text.encode()).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -104,12 +105,14 @@ def chunk_text(
         chunks.append(text[units[first].start : units[last].end])
         if last == len(units) - 1:
             break
-        # Walk back from the last unit while the repeated units still fit in the overlap;
-        # never back to `first` itself, so every chunk makes progress.
+        # Walk back from the last unit while the repeated units still fit in the overlap and
+        # still leave room for the next new unit (otherwise the next chunk would be only a
+        # repeat of this one's tail). Never back to `first`, so every chunk makes progress.
         next_first, overlap = last + 1, 0
+        room = max_tokens - units[last + 1].tokens
         for j in range(last, first, -1):
             overlap += units[j].tokens
-            if overlap > overlap_tokens:
+            if overlap > min(overlap_tokens, room):
                 break
             next_first = j
         first = next_first
@@ -132,7 +135,11 @@ def chunk_document(
             max_tokens=max_tokens,
             overlap_tokens=overlap_tokens,
         )
+        seen: set[str] = set()
         for piece in pieces:
+            if piece in seen:
+                continue  # a repeated passage; storing it twice adds nothing (and hash is UNIQUE)
+            seen.add(piece)
             chunks.append(
                 Chunk(
                     rfc_number=rfc_number,
