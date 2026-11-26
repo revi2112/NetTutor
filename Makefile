@@ -1,4 +1,4 @@
-.PHONY: install dev test lint typecheck check db-up db-down db-reset migrate fetch ingest eval
+.PHONY: install dev test lint typecheck check db-up db-down db-reset migrate fetch ingest eval eval-retrieval
 
 install:
 	uv sync
@@ -38,5 +38,7 @@ fetch:
 ingest:
 	uv run python -m scripts.ingest
 
-eval:
-	@echo "not implemented yet (session 4)"; exit 1
+eval: eval-retrieval
+
+eval-retrieval:
+	uv run python -m eval.run_retrieval

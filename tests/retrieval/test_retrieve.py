@@ -3,8 +3,8 @@ import pytest
 
 from app.retrieval.retrieve import retrieve
 from app.retrieval.search import keyword_search
+from tests.conftest import exact_chunk
 from tests.fakes import FakeEmbedder
-from tests.retrieval.conftest import exact_chunk
 
 pytestmark = pytest.mark.db
 
