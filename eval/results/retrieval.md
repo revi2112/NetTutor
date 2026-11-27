@@ -41,8 +41,19 @@ subsection of a golden section counts as a hit. Chunk R@5 skips the dedup.
 | 0.84 | 0.81 | 0.00 |
 | 0.85 | 0.93 | 0.00 |
 
-Configured `ON_TOPIC_THRESHOLD` = 0.74: the highest threshold whose
-false-refusal rate is at most 5%, with the false-answer rate as the tie-break.
+Configured `ON_TOPIC_THRESHOLD` = 0.74.
+It is the rule's pick (highest threshold with false refusal <= 5%).
+
+## Config
+
+| setting | value |
+|---|---|
+| chunks in DB | 4357 |
+| embed model | BAAI/bge-small-en-v1.5 |
+| chunk max / overlap tokens (current env) | 400 / 60 |
+| retrieval candidates per mode | 50 |
+| rrf_k | 60 |
+| top_k (app, not used by the eval) | 6 |
 
 Golden set sha256: `66ce9f22c5ee49db33e4946e1e680f59cfcecda0892dd5d9a8920e48abcc8faa`
-Commit: `ae5b1e9`
+Commit: `e10d9ef`
