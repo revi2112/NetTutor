@@ -105,7 +105,12 @@ def _commit() -> str:
     head = subprocess.run(
         ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, check=True
     ).stdout.strip()
-    dirty = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True).stdout
+    # The report itself is the output, so an older copy of it doesn't make the tree dirty.
+    dirty = subprocess.run(
+        ["git", "status", "--porcelain", "--", ".", f":!{RESULTS_PATH}"],
+        capture_output=True,
+        text=True,
+    ).stdout
     return head + ("-dirty" if dirty.strip() else "")
 
 
