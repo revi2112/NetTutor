@@ -20,7 +20,9 @@ from eval.golden import GOLDEN_PATH, GoldenQuestion, check_answers_exist, load_g
 from eval.metrics import ModeScores, Section, off_topic_rates, score_mode
 
 RESULTS_PATH = Path("eval/results/retrieval.md")
-THRESHOLDS = [round(0.50 + 0.05 * i, 2) for i in range(9)]  # 0.50 ... 0.90
+# bge-small packs top similarities into a narrow band (on-topic and near-miss off-topic
+# questions both land around 0.70-0.80), so a 0.05 grid is too coarse to place the cut.
+THRESHOLDS = [round(0.60 + 0.01 * i, 2) for i in range(26)]  # 0.60 ... 0.85
 MODES: tuple[Mode, ...] = get_args(Mode)
 
 
@@ -63,7 +65,9 @@ def run(
     return RetrievalReport(scores, sweep, len(on_topic), len(off_topic))
 
 
-def render_markdown(report: RetrievalReport, *, golden_sha256: str, commit: str) -> str:
+def render_markdown(
+    report: RetrievalReport, *, golden_sha256: str, commit: str, threshold: float
+) -> str:
     lines = [
         "# Retrieval eval",
         "",
@@ -86,8 +90,13 @@ def render_markdown(report: RetrievalReport, *, golden_sha256: str, commit: str)
         "| threshold | false refusal (on-topic refused) | false answer (off-topic answered) |",
         "|---|---|---|",
     ]
-    for threshold, refusal, answer in report.sweep:
-        lines.append(f"| {threshold:.2f} | {refusal:.2f} | {answer:.2f} |")
+    for t, refusal, answer in report.sweep:
+        lines.append(f"| {t:.2f} | {refusal:.2f} | {answer:.2f} |")
+    lines += [
+        "",
+        f"Configured `ON_TOPIC_THRESHOLD` = {threshold:.2f}: the highest threshold whose",
+        "false-refusal rate is at most 5%, with the false-answer rate as the tie-break.",
+    ]
     lines += ["", f"Golden set sha256: `{golden_sha256}`", f"Commit: `{commit}`", ""]
     return "\n".join(lines)
 
@@ -114,7 +123,12 @@ def main() -> None:
             k_candidates=settings.retrieval_candidates,
         )
     golden_sha = hashlib.sha256(GOLDEN_PATH.read_bytes()).hexdigest()
-    text = render_markdown(report, golden_sha256=golden_sha, commit=_commit())
+    text = render_markdown(
+        report,
+        golden_sha256=golden_sha,
+        commit=_commit(),
+        threshold=settings.on_topic_threshold,
+    )
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
     RESULTS_PATH.write_text(text)
     print(text)

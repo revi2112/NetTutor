@@ -6,4 +6,4 @@ This is v2 of a CS course team project
 ([Agent-Based-Tutor_Quiz-Bot](https://github.com/revi2112/Agent-Based-Tutor_Quiz-Bot)),
 rebuilt independently from scratch.
 
-**Status:** in progress (session 3 of 9 done: chunk + embed + ingest).
+**Status:** in progress (session 4 of 9 done: hybrid retrieval + retrieval eval).

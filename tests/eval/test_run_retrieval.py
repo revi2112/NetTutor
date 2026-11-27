@@ -50,7 +50,8 @@ def test_render_markdown(ingested_conn: psycopg.Connection) -> None:
     questions = [on_topic("q1", "datagrams", 9997, "u1")]
     questions.append(GoldenQuestion(id="off", question="zzz", off_topic=True))
     report = run(ingested_conn, FakeEmbedder(), questions, thresholds=THRESHOLDS)
-    text = render_markdown(report, golden_sha256="abc123", commit="deadbee")
+    text = render_markdown(report, golden_sha256="abc123", commit="deadbee", threshold=0.74)
     assert "| hybrid |" in text
+    assert "`ON_TOPIC_THRESHOLD` = 0.74" in text
     assert "abc123" in text
     assert "deadbee" in text
