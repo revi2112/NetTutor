@@ -1,0 +1,41 @@
+Internet Engineering Task Force (IETF)                         A. Author
+Request for Comments: 9998                                   Example Org
+Category: Standards Track                                      June 2022
+
+
+                         Example Sync Protocol
+
+Abstract
+
+   This document specifies the Example Sync Protocol.
+
+Table of Contents
+
+   1.  Introduction
+   2.  Protocol
+     2.1.  Messages
+       2.1.1.  Hello
+     2.2.  Errors
+   3.  Security Considerations
+
+1.  Introduction
+
+   Sync keeps two hosts in step.
+
+2.  Protocol
+
+2.1.  Messages
+
+   Each message has a type.
+
+2.1.1.  Hello
+
+   Hello opens a session.
+
+2.2.  Errors
+
+   Errors close a session.
+
+3.  Security Considerations
+
+   Sync has no security.

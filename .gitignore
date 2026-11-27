@@ -5,5 +5,11 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 data/raw/
+.cache/
 .DS_Store
 .superpowers/
+
+# Planning notes and Claude Code instructions stay local
+docs/
+CLAUDE.md
+nettutor-claude-code-tasks.md

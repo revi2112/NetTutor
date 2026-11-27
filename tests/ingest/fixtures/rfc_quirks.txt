@@ -1,0 +1,52 @@
+1. Introduction
+
+   NAT intro.
+
+2.0. Translation phases of a session.
+
+   Phases text.
+
+2.1. Address binding:
+
+   Binding text.
+
+   3.  Close the connection.
+
+3. Error Handling.
+
+   Errors text.
+
+   4.  ESTABLISHED --> <SEQ=101><ACK=301><CTL=ACK><DATA> --> ESTABLISHED
+
+   5.  ESTABLISHED <-- <SEQ=300><ACK=101><CTL=SYN,ACK> <-- SYN-RECEIVED
+
+   4.                                                       (Close)
+       TIME-WAIT   <-- <SEQ=300><ACK=101><CTL=FIN,ACK>  <-- CLOSE-WAIT
+
+3.1.  ICMP Error Messages Received on the Unprotected Side of the
+      Boundary
+
+   Wrapped text.
+
+3.2.  (EC)DHE Shared Secret Calculation
+
+   Paren text.
+
+   1.  Otherwise, the content is unidentified by HTTP, but a more
+       specific rule may apply.
+
+3.3.  0-RTT
+
+   Early data.
+
+3.4.  #-literals
+
+   Address literals.
+
+A. Data formats
+
+   Formats text.
+
+A.1 Packet header
+
+   Header text.

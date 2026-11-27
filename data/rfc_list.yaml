@@ -1,0 +1,33 @@
+# RFCs NetTutor ingests. `make fetch` downloads each as data/raw/rfc{number}.txt.
+rfcs:
+  - {number: 9293, title: "Transmission Control Protocol (TCP)"}
+  - {number: 768, title: "User Datagram Protocol"}
+  - {number: 791, title: "Internet Protocol"}
+  - {number: 8200, title: "Internet Protocol, Version 6 (IPv6) Specification"}
+  - {number: 792, title: "Internet Control Message Protocol"}
+  - {number: 1034, title: "Domain Names - Concepts and Facilities"}
+  - {number: 1035, title: "Domain Names - Implementation and Specification"}
+  - {number: 4033, title: "DNS Security Introduction and Requirements"}
+  - {number: 9110, title: "HTTP Semantics"}
+  - {number: 9112, title: "HTTP/1.1"}
+  - {number: 9113, title: "HTTP/2"}
+  - {number: 9114, title: "HTTP/3"}
+  - {number: 9000, title: "QUIC: A UDP-Based Multiplexed and Secure Transport"}
+  - {number: 8446, title: "The Transport Layer Security (TLS) Protocol Version 1.3"}
+  - {number: 5246, title: "The Transport Layer Security (TLS) Protocol Version 1.2"}
+  - {number: 2131, title: "Dynamic Host Configuration Protocol"}
+  - {number: 826, title: "An Ethernet Address Resolution Protocol"}
+  - {number: 3022, title: "Traditional IP Network Address Translator (Traditional NAT)"}
+  - {number: 4271, title: "A Border Gateway Protocol 4 (BGP-4)"}
+  - {number: 2328, title: "OSPF Version 2"}
+  - {number: 4301, title: "Security Architecture for the Internet Protocol"}
+  - {number: 4303, title: "IP Encapsulating Security Payload (ESP)"}
+  - {number: 7296, title: "Internet Key Exchange Protocol Version 2 (IKEv2)"}
+  - {number: 4251, title: "The Secure Shell (SSH) Protocol Architecture"}
+  - {number: 5321, title: "Simple Mail Transfer Protocol"}
+  - {number: 6749, title: "The OAuth 2.0 Authorization Framework"}
+  - {number: 5280, title: "Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile"}
+  - {number: 4120, title: "The Kerberos Network Authentication Service (V5)"}
+  - {number: 3411, title: "An Architecture for Describing Simple Network Management Protocol (SNMP) Management Frameworks"}
+  - {number: 1918, title: "Address Allocation for Private Internets"}
+  - {number: 4632, title: "Classless Inter-domain Routing (CIDR): The Internet Address Assignment and Aggregation Plan"}

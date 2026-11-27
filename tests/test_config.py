@@ -14,6 +14,11 @@ ENV_VARS = [
     "RETRIEVAL_MODE",
     "TOP_K",
     "ON_TOPIC_THRESHOLD",
+    "EMBED_CACHE_DIR",
+    "CHUNK_MAX_TOKENS",
+    "CHUNK_OVERLAP_TOKENS",
+    "RRF_K",
+    "RETRIEVAL_CANDIDATES",
 ]
 
 
@@ -35,6 +40,11 @@ def test_defaults() -> None:
     assert s.embed_dim == 384
     assert s.retrieval_mode == "hybrid"
     assert s.top_k == 6
+    assert s.embed_cache_dir == ".cache/fastembed"
+    assert s.chunk_max_tokens == 400
+    assert s.chunk_overlap_tokens == 60
+    assert s.rrf_k == 60
+    assert s.retrieval_candidates == 50
 
 
 def test_api_key_optional() -> None:
@@ -66,3 +76,10 @@ def test_embed_dim_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_blank_api_key_is_none(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ANTHROPIC_API_KEY", "")
     assert make().anthropic_api_key is None
+
+
+def test_on_topic_threshold_bounds(monkeypatch: pytest.MonkeyPatch) -> None:
+    for bad in ("-0.1", "1.5"):
+        monkeypatch.setenv("ON_TOPIC_THRESHOLD", bad)
+        with pytest.raises(ValidationError):
+            make()

@@ -1,0 +1,24 @@
+Network Working Group                                          A. Author
+Request for Comments:  9996                                  Example Org
+                                                          September 1981
+
+                     EXAMPLE CONTROL MESSAGE PROTOCOL
+
+Introduction
+
+   Control messages report errors.
+
+   They are sent by gateways.
+
+Echo Message
+
+   An echo asks for a reply.
+
+Author                                                          [Page 1]
+
+September 1981
+RFC 9996
+
+References
+
+   [1]  Somebody, "A Paper," 1980.

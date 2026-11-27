@@ -10,10 +10,19 @@ dependencies = [
     "psycopg[binary]",
     "pydantic",
     "pydantic-settings",
+    "pyyaml>=6.0.4",
+    "fastembed>=0.9.1",
+    "pgvector>=0.5.1",
 ]
 
 [dependency-groups]
-dev = ["pytest", "httpx2", "ruff", "mypy"]
+dev = [
+    "pytest",
+    "httpx2",
+    "ruff",
+    "mypy",
+    "types-pyyaml>=6.0.12.20261122",
+]
 
 [tool.uv]
 package = false
@@ -21,13 +30,14 @@ package = false
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+extend-exclude = ["docs"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
 strict = true
-files = ["app"]
+files = ["app", "eval"]
 plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
