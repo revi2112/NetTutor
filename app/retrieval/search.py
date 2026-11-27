@@ -36,7 +36,12 @@ def _hit(row: tuple[Any, ...]) -> Hit:
 
 
 def vector_search(conn: psycopg.Connection, query_vec: Vector, k: int) -> list[Hit]:
-    """The k chunks closest to the query vector; score = cosine similarity."""
+    """The k chunks closest to the query vector; score = cosine similarity.
+
+    The `c.id` tie-break makes Postgres do an exact scan instead of using the approximate
+    HNSW index. That is intended: at ~4k chunks it takes milliseconds, the on-topic threshold
+    sits in a band 0.01 wide, and HNSW would also cap results at `hnsw.ef_search` (40).
+    """
     register_vector(conn)
     rows = conn.execute(
         f"SELECT {_COLUMNS}, 1 - (c.embedding <=> %s) AS score {_FROM}"
@@ -58,10 +63,6 @@ def keyword_search(conn: psycopg.Connection, query: str, k: int) -> list[Hit]:
 
 
 def top_similarity(conn: psycopg.Connection, query_vec: Vector) -> float | None:
-    """Cosine similarity of the closest chunk, or None if there are no chunks."""
-    register_vector(conn)
-    row = conn.execute(
-        "SELECT 1 - (embedding <=> %s) FROM chunks ORDER BY embedding <=> %s LIMIT 1",
-        (query_vec, query_vec),
-    ).fetchone()
-    return None if row is None else float(row[0])
+    """Cosine similarity of the closest chunk (exact, as in vector_search), or None if empty."""
+    best = vector_search(conn, query_vec, 1)
+    return best[0].score if best else None

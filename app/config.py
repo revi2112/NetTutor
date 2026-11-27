@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     top_k: int = Field(default=6, gt=0)
     rrf_k: int = Field(default=60, gt=0)
     retrieval_candidates: int = Field(default=50, gt=0)
-    on_topic_threshold: float = 0.74
+    on_topic_threshold: float = Field(default=0.74, ge=0, le=1)
 
     @field_validator("anthropic_api_key", mode="before")
     @classmethod

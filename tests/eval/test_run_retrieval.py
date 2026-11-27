@@ -50,8 +50,18 @@ def test_render_markdown(ingested_conn: psycopg.Connection) -> None:
     questions = [on_topic("q1", "datagrams", 9997, "u1")]
     questions.append(GoldenQuestion(id="off", question="zzz", off_topic=True))
     report = run(ingested_conn, FakeEmbedder(), questions, thresholds=THRESHOLDS)
-    text = render_markdown(report, golden_sha256="abc123", commit="deadbee", threshold=0.74)
+    config = {"chunks": "12", "rrf_k": "60"}
+    text = render_markdown(
+        report, golden_sha256="abc123", commit="deadbee", threshold=0.74, config=config
+    )
     assert "| hybrid |" in text
+    assert "| rrf_k | 60 |" in text
     assert "`ON_TOPIC_THRESHOLD` = 0.74" in text
+    assert "does not match" in text  # the rule picks 0.70 or 0.90 here, not 0.74
     assert "abc123" in text
     assert "deadbee" in text
+
+
+def test_run_needs_both_kinds_of_question(ingested_conn: psycopg.Connection) -> None:
+    with pytest.raises(ValueError, match="off-topic"):
+        run(ingested_conn, FakeEmbedder(), [on_topic("q1", "x", 9997, "u1")], thresholds=[0.5])

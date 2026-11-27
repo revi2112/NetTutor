@@ -46,3 +46,11 @@ def test_empty_database(migrated_conn: psycopg.Connection) -> None:
     assert result.hits == []
     assert result.top_similarity is None
     assert result.on_topic is False
+
+
+def test_stopword_only_query_still_returns_hits(ingested_conn: psycopg.Connection) -> None:
+    for mode in ("vector", "hybrid"):
+        result = retrieve(
+            ingested_conn, FakeEmbedder(), "what is it?", mode=mode, k=3, threshold=0.0
+        )
+        assert result.hits, mode

@@ -5,6 +5,7 @@ from eval.metrics import (
     first_hit_rank,
     is_match,
     off_topic_rates,
+    pick_threshold,
     score_mode,
     unique_sections,
 )
@@ -56,3 +57,9 @@ def test_section_dedup_vs_chunk_recall() -> None:
 
 def test_off_topic_rates() -> None:
     assert off_topic_rates([0.9, 0.6, None], [0.7, 0.4], 0.65) == pytest.approx((2 / 3, 1 / 2))
+
+
+def test_pick_threshold() -> None:
+    sweep = [(0.72, 0.0, 0.2), (0.73, 0.02, 0.1), (0.74, 0.05, 0.1), (0.75, 0.06, 0.0)]
+    assert pick_threshold(sweep, max_false_refusal=0.05) == 0.74
+    assert pick_threshold([(0.8, 0.5, 0.0)], max_false_refusal=0.05) is None

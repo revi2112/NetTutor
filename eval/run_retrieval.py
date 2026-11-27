@@ -17,13 +17,14 @@ from app.db.connection import connect
 from app.llm.embeddings import Embedder, FastEmbedEmbedder
 from app.retrieval.retrieve import Mode, retrieve
 from eval.golden import GOLDEN_PATH, GoldenQuestion, check_answers_exist, load_golden
-from eval.metrics import ModeScores, Section, off_topic_rates, score_mode
+from eval.metrics import ModeScores, Section, off_topic_rates, pick_threshold, score_mode
 
 RESULTS_PATH = Path("eval/results/retrieval.md")
 # bge-small packs top similarities into a narrow band (on-topic and near-miss off-topic
 # questions both land around 0.70-0.80), so a 0.05 grid is too coarse to place the cut.
 THRESHOLDS = [round(0.60 + 0.01 * i, 2) for i in range(26)]  # 0.60 ... 0.85
 MODES: tuple[Mode, ...] = get_args(Mode)
+MAX_FALSE_REFUSAL = 0.05
 
 
 @dataclass
@@ -41,16 +42,28 @@ def run(
     *,
     thresholds: Sequence[float],
     k_candidates: int = 50,
+    rrf_k: int = 60,
 ) -> RetrievalReport:
     on_topic = [q for q in questions if not q.off_topic]
     off_topic = [q for q in questions if q.off_topic]
+    if not on_topic or not off_topic:
+        raise ValueError("the golden set needs both on-topic and off-topic questions")
 
     scores: dict[Mode, ModeScores] = {}
     on_sims: list[float | None] = []
     for mode in MODES:
         results = []
         for q in on_topic:
-            r = retrieve(conn, embedder, q.question, mode=mode, k=k_candidates, threshold=0.0)
+            r = retrieve(
+                conn,
+                embedder,
+                q.question,
+                mode=mode,
+                k=k_candidates,
+                threshold=0.0,
+                candidates=k_candidates,
+                rrf_k=rrf_k,
+            )
             golden: list[Section] = [(a.rfc, a.section) for a in q.answers]
             results.append((golden, r.hits))
             if mode == "vector":
@@ -66,7 +79,12 @@ def run(
 
 
 def render_markdown(
-    report: RetrievalReport, *, golden_sha256: str, commit: str, threshold: float
+    report: RetrievalReport,
+    *,
+    golden_sha256: str,
+    commit: str,
+    threshold: float,
+    config: dict[str, str],
 ) -> str:
     lines = [
         "# Retrieval eval",
@@ -92,11 +110,16 @@ def render_markdown(
     ]
     for t, refusal, answer in report.sweep:
         lines.append(f"| {t:.2f} | {refusal:.2f} | {answer:.2f} |")
-    lines += [
-        "",
-        f"Configured `ON_TOPIC_THRESHOLD` = {threshold:.2f}: the highest threshold whose",
-        "false-refusal rate is at most 5%, with the false-answer rate as the tie-break.",
-    ]
+    pick = pick_threshold(report.sweep, max_false_refusal=MAX_FALSE_REFUSAL)
+    rule = f"highest threshold with false refusal <= {MAX_FALSE_REFUSAL:.0%}"
+    lines += ["", f"Configured `ON_TOPIC_THRESHOLD` = {threshold:.2f}."]
+    if pick is not None and abs(pick - threshold) < 1e-9:
+        lines.append(f"It is the rule's pick ({rule}).")
+    else:
+        shown = "none" if pick is None else f"{pick:.2f}"
+        lines.append(f"**Warning:** it does not match the rule's pick ({rule}): {shown}.")
+    lines += ["", "## Config", "", "| setting | value |", "|---|---|"]
+    lines += [f"| {key} | {value} |" for key, value in config.items()]
     lines += ["", f"Golden set sha256: `{golden_sha256}`", f"Commit: `{commit}`", ""]
     return "\n".join(lines)
 
@@ -126,13 +149,26 @@ def main() -> None:
             questions,
             thresholds=THRESHOLDS,
             k_candidates=settings.retrieval_candidates,
+            rrf_k=settings.rrf_k,
         )
+        (n_chunks,) = conn.execute("SELECT count(*) FROM chunks").fetchone() or (0,)
+    config = {
+        "chunks in DB": str(n_chunks),
+        "embed model": settings.embed_model,
+        "chunk max / overlap tokens (current env)": (
+            f"{settings.chunk_max_tokens} / {settings.chunk_overlap_tokens}"
+        ),
+        "retrieval candidates per mode": str(settings.retrieval_candidates),
+        "rrf_k": str(settings.rrf_k),
+        "top_k (app, not used by the eval)": str(settings.top_k),
+    }
     golden_sha = hashlib.sha256(GOLDEN_PATH.read_bytes()).hexdigest()
     text = render_markdown(
         report,
         golden_sha256=golden_sha,
         commit=_commit(),
         threshold=settings.on_topic_threshold,
+        config=config,
     )
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
     RESULTS_PATH.write_text(text)

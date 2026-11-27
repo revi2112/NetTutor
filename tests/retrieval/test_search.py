@@ -44,5 +44,10 @@ def test_top_similarity(ingested_conn: psycopg.Connection) -> None:
     assert sim is not None and sim > 0.999
 
 
+def test_top_similarity_agrees_with_vector_search(ingested_conn: psycopg.Connection) -> None:
+    vec = FakeEmbedder().embed_query("datagram checksums")
+    assert top_similarity(ingested_conn, vec) == vector_search(ingested_conn, vec, 1)[0].score
+
+
 def test_top_similarity_empty_db(migrated_conn: psycopg.Connection) -> None:
     assert top_similarity(migrated_conn, FakeEmbedder().embed_query("x")) is None

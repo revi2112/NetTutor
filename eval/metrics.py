@@ -88,3 +88,11 @@ def off_topic_rates(
     false_refusals = sum(not answered(s) for s in on_topic_sims)
     false_answers = sum(answered(s) for s in off_topic_sims)
     return false_refusals / len(on_topic_sims), false_answers / len(off_topic_sims)
+
+
+def pick_threshold(
+    sweep: Sequence[tuple[float, float, float]], *, max_false_refusal: float
+) -> float | None:
+    """The highest swept threshold whose false-refusal rate is at most `max_false_refusal`."""
+    ok = [t for t, refusal, _ in sweep if refusal <= max_false_refusal]
+    return max(ok) if ok else None
